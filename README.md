@@ -1,2 +1,2 @@
 # KanjiReadingFrequency
-Tool to analyze frequency info of various readings of Kanji
+Tool to analyze frequency info of various readings of Kanji using resources from Jotoba
