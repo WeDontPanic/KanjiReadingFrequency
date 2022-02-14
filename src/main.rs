@@ -1,48 +1,45 @@
 pub mod frequency_index;
+
+#[cfg(feature = "all")]
 pub mod joto_resources;
+
+#[cfg(feature = "all")]
 pub mod scan;
 
-use std::{
-    sync::{Arc, Mutex},
-    time::Instant,
-};
+use std::fs::File;
 
+#[cfg(feature = "all")]
 use frequency_index::FrequencyIndex;
+#[cfg(feature = "all")]
+use japanese::JapaneseExt;
+#[cfg(feature = "all")]
 use joto_resources::{get_dict_resources, get_sentences};
-use once_cell::sync::Lazy;
 
-/// The path of the unidict-mecab dictionary
-pub const NL_PARSER_PATH: &str = "./unidic-mecab";
-
-/// A global natural language parser
-pub static JA_NL_PARSER: Lazy<igo_unidic::Parser> =
-    Lazy::new(|| igo_unidic::Parser::new(NL_PARSER_PATH).unwrap());
-
+#[cfg(feature = "all")]
 fn main() {
     let dict_resources = get_dict_resources();
     let sentences = get_sentences();
 
-    let freq_index = FrequencyIndex::new(&dict_resources.kanji);
-    let freq_index_m = Arc::new(Mutex::new(freq_index));
+    let mut freq_index = FrequencyIndex::new(&dict_resources.kanji);
 
-    let start = Instant::now();
     println!("Scan sentences");
-    scan::sentences::run(freq_index_m.clone(), &sentences);
-    println!("Sentence scanning took: {:?}", start.elapsed());
+    scan::sentences::run(&mut freq_index, &sentences);
 
     println!("Scan words");
-    scan::words::run(freq_index_m.clone(), &dict_resources.words);
+    scan::words::run(&mut freq_index, &dict_resources.words);
 
-    //freq_index_m.lock().unwrap().debug();
+    println!("Saving");
+    freq_index.save(File::create("out").unwrap()).unwrap();
 }
 
+#[cfg(feature = "all")]
 pub fn readings_match(reading: &str, word: &str) -> bool {
     let reading = reading.replace('-', "");
 
     if reading.contains('.') {
         let lit_reading = reading.split('.').next().unwrap();
-        return lit_reading == word;
+        return lit_reading.to_hiragana() == word.to_hiragana();
     }
 
-    reading == word
+    reading.to_hiragana() == word.to_hiragana()
 }
