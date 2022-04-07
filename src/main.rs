@@ -15,10 +15,13 @@ use japanese::JapaneseExt;
 #[cfg(feature = "all")]
 use joto_resources::{get_dict_resources, get_sentences};
 
+const JOTO_STORAGE_PATH: &str = "../jotoba/resources/storage_data";
+const JOTO_SENTENCE_PATH: &str = "../jotoba/resources/sentences.bin";
+
 #[cfg(feature = "all")]
 fn main() {
-    let dict_resources = get_dict_resources();
-    let sentences = get_sentences();
+    let dict_resources = get_dict_resources(JOTO_STORAGE_PATH);
+    let sentences = get_sentences(JOTO_SENTENCE_PATH);
 
     let mut freq_index = FrequencyIndex::new(&dict_resources.kanji);
 

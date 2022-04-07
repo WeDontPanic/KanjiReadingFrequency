@@ -3,7 +3,6 @@ use std::{
     io::{Read, Write},
 };
 
-use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "all")]
@@ -11,18 +10,18 @@ use types::jotoba::kanji::Kanji;
 
 #[derive(Serialize, Deserialize)]
 pub struct FrequencyIndex {
-    data: HashMap<char, FreqData>,
+    pub data: HashMap<char, FreqData>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct FreqData {
-    total: usize,
-    readings: Vec<(String, u32)>,
+    pub total: usize,
+    pub readings: Vec<(String, u32)>,
 }
 
 impl FreqData {
     fn new(readings: Vec<String>) -> Self {
-        let readings = readings.into_iter().map(|i| (i, 0)).collect_vec();
+        let readings = readings.into_iter().map(|i| (i, 0)).collect::<Vec<_>>();
         Self { total: 0, readings }
     }
 
@@ -31,6 +30,7 @@ impl FreqData {
         self.total
     }
 
+    #[inline]
     pub fn get_reading<S: AsRef<str>>(&self, r: S) -> Option<u32> {
         self.readings
             .iter()
@@ -40,7 +40,15 @@ impl FreqData {
 }
 
 impl FrequencyIndex {
-    #[cfg(feature = "all")]
+    /// Returns a FreqData for the kanji `c`
+    #[inline]
+    pub fn get(&self, c: char) -> Option<&FreqData> {
+        self.data.get(&c)
+    }
+}
+
+#[cfg(feature = "all")]
+impl FrequencyIndex {
     pub fn new(all_kanji: &[Kanji]) -> FrequencyIndex {
         let mut data = HashMap::new();
 
@@ -58,11 +66,6 @@ impl FrequencyIndex {
         }
 
         FrequencyIndex { data }
-    }
-
-    /// Returns a FreqData for the kanji `c`
-    pub fn get(&self, c: char) -> Option<&FreqData> {
-        self.data.get(&c)
     }
 
     pub fn add_reading<F>(&mut self, kanji_lit: char, matches: F) -> bool
@@ -103,6 +106,7 @@ impl FrequencyIndex {
     }
 
     pub fn debug(&self) {
+        use itertools::Itertools;
         for (k, v) in self.data.iter() {
             if v.total == 0 {
                 continue;

@@ -1,17 +1,11 @@
-use std::{fs::File, io::BufReader};
+use std::{fs::File, io::BufReader, path::Path};
 
 use resources::models::{storage::SentenceStorage, DictResources};
 
-pub fn get_dict_resources() -> DictResources {
-    DictResources::read(BufReader::new(
-        File::open("../jotoba/resources/storage_data").unwrap(),
-    ))
-    .unwrap()
+pub fn get_dict_resources<P: AsRef<Path>>(path: P) -> DictResources {
+    DictResources::read(BufReader::new(File::open(path).unwrap())).unwrap()
 }
 
-pub fn get_sentences() -> SentenceStorage {
-    bincode::deserialize_from(BufReader::new(
-        File::open("../jotoba/resources/sentences.bin").unwrap(),
-    ))
-    .unwrap()
+pub fn get_sentences<P: AsRef<Path>>(path: P) -> SentenceStorage {
+    bincode::deserialize_from(BufReader::new(File::open(path).unwrap())).unwrap()
 }
